@@ -1,10 +1,17 @@
-# SwiftResponsiveLabel
-
+# This was forked from <a href="https://github.com/hsusmita/SwiftResponsiveLabel">hsusmita/SwiftResponsiveLabel</a>
 A UILabel subclass which responds to touch on specified patterns. It has the following features:
-
 1. It can detect pattern specified by regular expression and apply style such as font, color etc.
 2. It allows to replace default ellipse with tappable attributed string to mark truncation
 3. Convenience methods are provided to detect hashtags, username handler and URLs
+
+# Datnm Fixed:
+the original of SwiftResponsiveLabel is not good when use in UITableViewCell with autolayout and AutoDimension in UITableView
+and with a dynamic Label height (not fix height), so, i fix this.
+1. correct truncation token with new line string
+2. correct truncation token when use in UITableViewCell with autolayout and AutoDimension in UITableView
+
+# Screenshot fixed
+<img src="https://github.com/datnm/SwiftResponsiveLabel/blob/master/datnmfix.png" width="800" display="inline-block">
 
 #Installation
 
