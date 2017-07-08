@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		09069C0A1F108E9D00385FAC /* AutolayoutDimensionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09069C071F108E9D00385FAC /* AutolayoutDimensionCell.swift */; };
+		09069C0B1F108E9D00385FAC /* AutolayoutDimensionCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 09069C081F108E9D00385FAC /* AutolayoutDimensionCell.xib */; };
+		09069C0C1F108E9D00385FAC /* AutolayoutDimensionTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09069C091F108E9D00385FAC /* AutolayoutDimensionTable.swift */; };
 		4EB857BE1C8823CE00431BA9 /* SwiftResponsiveLabel+TruncationHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EB857BD1C8823CE00431BA9 /* SwiftResponsiveLabel+TruncationHandler.swift */; };
 		4ECBA0111C8434EA00884FCD /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4ECBA00F1C8434EA00884FCD /* Main.storyboard */; };
 		4ECBA0131C8434EA00884FCD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4ECBA0121C8434EA00884FCD /* Assets.xcassets */; };
@@ -43,6 +46,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		09069C071F108E9D00385FAC /* AutolayoutDimensionCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AutolayoutDimensionCell.swift; path = "Demo Project/AutolayoutDimensionCell.swift"; sourceTree = "<group>"; };
+		09069C081F108E9D00385FAC /* AutolayoutDimensionCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = AutolayoutDimensionCell.xib; path = "Demo Project/AutolayoutDimensionCell.xib"; sourceTree = "<group>"; };
+		09069C091F108E9D00385FAC /* AutolayoutDimensionTable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AutolayoutDimensionTable.swift; path = "Demo Project/AutolayoutDimensionTable.swift"; sourceTree = "<group>"; };
 		4EB857BD1C8823CE00431BA9 /* SwiftResponsiveLabel+TruncationHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "SwiftResponsiveLabel+TruncationHandler.swift"; path = "Source/SwiftResponsiveLabel+TruncationHandler.swift"; sourceTree = "<group>"; };
 		4ECBA0081C8434EA00884FCD /* SwiftResponsiveLabel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftResponsiveLabel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4ECBA0101C8434EA00884FCD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -150,6 +156,9 @@
 				4ECBA00F1C8434EA00884FCD /* Main.storyboard */,
 				7808F24F1DE2D30D00D7F9DC /* InteractiveTableViewController.swift */,
 				7808F2551DE2D3B100D7F9DC /* InteractiveTableViewCell.swift */,
+				09069C091F108E9D00385FAC /* AutolayoutDimensionTable.swift */,
+				09069C071F108E9D00385FAC /* AutolayoutDimensionCell.swift */,
+				09069C081F108E9D00385FAC /* AutolayoutDimensionCell.xib */,
 			);
 			name = "Demo Project";
 			sourceTree = "<group>";
@@ -277,6 +286,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4ECBA0161C8434EA00884FCD /* LaunchScreen.storyboard in Resources */,
+				09069C0B1F108E9D00385FAC /* AutolayoutDimensionCell.xib in Resources */,
 				4ECBA0131C8434EA00884FCD /* Assets.xcassets in Resources */,
 				4ECBA0111C8434EA00884FCD /* Main.storyboard in Resources */,
 			);
@@ -307,7 +317,9 @@
 				4EF960EB1C86E905007CB596 /* PatternDescriptor.swift in Sources */,
 				4ECBA0421C85A14700884FCD /* TouchHandler.swift in Sources */,
 				7808F2531DE2D37500D7F9DC /* AppDelegate.swift in Sources */,
+				09069C0C1F108E9D00385FAC /* AutolayoutDimensionTable.swift in Sources */,
 				4ECBA0401C85913A00884FCD /* NSAttributedString+Processing.swift in Sources */,
+				09069C0A1F108E9D00385FAC /* AutolayoutDimensionCell.swift in Sources */,
 				7808F2501DE2D30D00D7F9DC /* InteractiveTableViewController.swift in Sources */,
 				4ECBA03E1C85710500884FCD /* SwiftResponsiveLabel.swift in Sources */,
 				7808F2561DE2D3B100D7F9DC /* InteractiveTableViewCell.swift in Sources */,
