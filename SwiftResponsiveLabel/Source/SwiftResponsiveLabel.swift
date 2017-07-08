@@ -27,21 +27,26 @@ open class SwiftResponsiveLabel: UILabel {
 
 	override open var frame: CGRect {
 		didSet {
-			self.textKitStack.resizeTextContainer(frame.size)
+			self.updateTextContainerSize()
 		}
 	}
 
 	override open var bounds: CGRect {
 		didSet {
-			self.textKitStack.resizeTextContainer(bounds.size)
+			self.updateTextContainerSize()
 		}
 	}
 
 	override open var preferredMaxLayoutWidth: CGFloat {
 		didSet {
-			self.textKitStack.resizeTextContainer(frame.size)
+			self.updateTextContainerSize()
 		}
 	}
+    
+    var lineFragmentPadding: CGFloat {
+        get { return self.textKitStack.lineFragmentPadding }
+        set { self.textKitStack.lineFragmentPadding = newValue }
+    }
 
 	override open var text: String? {
 		didSet {
@@ -59,11 +64,24 @@ open class SwiftResponsiveLabel: UILabel {
 	
 	override open var numberOfLines: Int {
 		didSet {
-			let rect = self.textKitStack.rectFittingTextForContainerSize(self.bounds.size, numberOfLines: self.numberOfLines, font: self.font)
-			self.textKitStack.resizeTextContainer(rect.size)
+            self.textKitStack.numberOflines = numberOfLines
+            var fittingSize = self.bounds.size
+            if self.preferredMaxLayoutWidth > fittingSize.width { fittingSize.width = self.preferredMaxLayoutWidth }
+			let rect = self.textKitStack.rectFittingTextForContainerSize(fittingSize, numberOfLines: self.numberOfLines, font: self.font)
+			self.updateTextContainerSize(size: rect.size)
 		}
 	}
+    
+    open override var lineBreakMode: NSLineBreakMode {
+        get { return self.textKitStack.lineBreakMode }
+        set { self.textKitStack.lineBreakMode = newValue }
+    }
 	
+    internal func updateTextContainerSize(size: CGSize? = nil) {
+        var updateSize = size ?? self.bounds.size
+        if self.preferredMaxLayoutWidth > updateSize.width { updateSize.width = self.preferredMaxLayoutWidth }
+        self.textKitStack.resizeTextContainer(updateSize)
+    }
 	
 	/** This boolean determines if custom truncation token should be added
 	*/
@@ -157,7 +175,7 @@ open class SwiftResponsiveLabel: UILabel {
 		// Add truncation token if necessary
 		var finalString: NSAttributedString = textKitStack.currentAttributedText
 		if let _ = self.attributedTruncationToken, self.shouldTruncate() && self.customTruncationEnabled {
-			if let string = self.stringWithTruncationToken(), self.truncationTokenAppended() == false {
+			if let string = self.stringWithTruncationToken(inRect: rect), self.truncationTokenAppended() == false {
 				finalString = string
 			}
 		}
@@ -170,9 +188,12 @@ open class SwiftResponsiveLabel: UILabel {
 		self.textKitStack.drawText(self.textOffSet(rect))
 	}
 
-	override open func textRect(forBounds bounds: CGRect, limitedToNumberOfLines numberOfLines: Int) -> CGRect {
-		let rect = self.textKitStack.rectFittingTextForContainerSize(bounds.size, numberOfLines: self.numberOfLines, font: self.font)
-		self.textKitStack.resizeTextContainer(rect.size)
+	override open func textRect(forBounds fBounds: CGRect, limitedToNumberOfLines numberOfLines: Int) -> CGRect {
+        var fittingSize = fBounds.size
+        if self.preferredMaxLayoutWidth > fittingSize.width { fittingSize.width = self.preferredMaxLayoutWidth }
+        
+		let rect = self.textKitStack.rectFittingTextForContainerSize(fittingSize, numberOfLines: self.numberOfLines, font: self.font)
+		self.updateTextContainerSize(size: rect.size)
 		return rect
 	}
 
@@ -316,7 +337,7 @@ open class SwiftResponsiveLabel: UILabel {
 		guard numberOfLines > 0 else {
 			return false
 		}
-		let range = self.textKitStack.rangeForTokenInsertion(self.attributedTextToDisplay)
+		let range = self.textKitStack.rangeForTokenInsertion(self.attributedTextToDisplay, font: self.font)
 		return (range.location + range.length <= self.attributedTextToDisplay.length)
 	}
 

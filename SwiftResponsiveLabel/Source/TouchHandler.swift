@@ -45,7 +45,7 @@ class TouchHandler: NSObject {
 
 	@objc fileprivate func handleTouch(_ gesture: UIGestureRecognizer) {
 		let touchLocation = gesture.location(in: self.responsiveLabel)
-		let index = self.responsiveLabel?.textKitStack.characterIndexAtLocation(touchLocation)
+		let index = self.responsiveLabel?.textKitStack.touchedCharacterIndexAtLocation(touchLocation)
 		self.touchIndex = index
 
 		switch gesture.state {
@@ -134,7 +134,7 @@ extension TouchHandler : UIGestureRecognizerDelegate {
 	func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
 		let touchLocation = touch.location(in: self.responsiveLabel)
 		guard let textkitStack = self.responsiveLabel?.textKitStack,
-			let index = self.responsiveLabel?.textKitStack.characterIndexAtLocation(touchLocation), index < textkitStack.textStorageLength
+			let index = self.responsiveLabel?.textKitStack.touchedCharacterIndexAtLocation(touchLocation), index < textkitStack.textStorageLength
 		 else {
 		 	return false
 		}

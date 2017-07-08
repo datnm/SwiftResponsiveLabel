@@ -20,12 +20,12 @@ class InlineTextAttachment : NSTextAttachment {
 }
 
 extension SwiftResponsiveLabel {
-	func stringWithTruncationToken() -> NSAttributedString? {
+    func stringWithTruncationToken(inRect: CGRect? = nil) -> NSAttributedString? {
 		let currentText = self.attributedTextToDisplay
 		guard let truncationToken = self.attributedTruncationToken, currentText.string.isEmpty == false else {
 			return nil
 		}
-		let range = self.textKitStack.rangeForTokenInsertion(truncationToken)
+        let range = self.textKitStack.rangeForTokenInsertion(truncationToken, font: self.font, inRect: inRect)
 		guard range.location != NSNotFound && range.location > 0 && (range.location + range.length) <= currentText.length else {
 			return nil
 		}

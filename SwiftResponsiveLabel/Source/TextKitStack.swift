@@ -16,6 +16,7 @@ open class TextKitStack {
 	fileprivate var layoutManager = NSLayoutManager()
 	fileprivate var textStorage = NSTextStorage()
 	fileprivate var currentTextOffset = CGPoint.zero
+    fileprivate var tokenSizeForTouch = CGFloat(50)
 	
 	open var textStorageLength: Int {
 		return self.textStorage.length
@@ -30,12 +31,24 @@ open class TextKitStack {
 			self.textContainer.maximumNumberOfLines = self.numberOflines
 		}
 	}
-
+    
+    open var lineFragmentPadding: CGFloat {
+        get { return self.textContainer.lineFragmentPadding }
+        set { self.textContainer.lineFragmentPadding = newValue }
+    }
+    
+    open var lineBreakMode: NSLineBreakMode {
+        get { return self.textContainer.lineBreakMode }
+        set { self.textContainer.lineBreakMode = newValue }
+    }
+    
 	init() {
 		self.textContainer.widthTracksTextView = true
 		self.textContainer.heightTracksTextView = true
 		self.layoutManager.addTextContainer(self.textContainer)
 		self.textStorage.addLayoutManager(self.layoutManager)
+        self.lineFragmentPadding = 0
+        self.lineBreakMode = .byTruncatingTail
 	}
 	
 	/** Draws text in textStorage starting at point specified by textOffset
@@ -69,21 +82,29 @@ open class TextKitStack {
 	- parameters:
 		- location: CGPoint
 	*/
-	open func characterIndexAtLocation(_ location: CGPoint) -> Int {
-		var characterIndex: Int = NSNotFound
-		if self.textStorage.string.characters.count > 0 {
-			let glyphIndex = self.glyphIndexForLocation(location)
-			// If the location is in white space after the last glyph on the line we don't
-			// count it as a hit on the text
-			let rangePointer: NSRangePointer? = nil
-			var lineRect = self.layoutManager.lineFragmentUsedRect(forGlyphAt: glyphIndex, effectiveRange: rangePointer)
-			lineRect.size.height = 60.0 //Adjustment to increase tap area
-			if lineRect.contains(location) {
-				characterIndex = self.layoutManager.characterIndexForGlyph(at: glyphIndex)
-			}
-		}
-		return characterIndex
+	fileprivate func lastCharacterIndexInLineAtLocation(_ location: CGPoint) -> Int {
+       return self.layoutManager.characterIndex(for: location, in: self.textContainer, fractionOfDistanceBetweenInsertionPoints: nil)
 	}
+    
+    /** Returns character index at a particular location
+     - parameters:
+     - location: CGPoint
+     */
+    open func touchedCharacterIndexAtLocation(_ touchLocation: CGPoint) -> Int {
+        var characterIndex: Int = NSNotFound
+        if self.textStorage.string.characters.count > 0 {
+            let glyphIndex = self.glyphIndexForLocation(touchLocation)
+            // If the location is in white space after the last glyph on the line we don't
+            // count it as a hit on the text
+            let rangePointer: NSRangePointer? = nil
+            var lineRect = self.layoutManager.lineFragmentUsedRect(forGlyphAt: glyphIndex, effectiveRange: rangePointer)
+            lineRect.size.height = 40.0 //Adjustment to increase tap area
+            if lineRect.contains(touchLocation) {
+                characterIndex = self.layoutManager.characterIndexForGlyph(at: glyphIndex)
+            }
+        }
+        return characterIndex
+    }
 	
 	/** Returns the range which contains the index
 	- parameters:
@@ -96,6 +117,7 @@ open class TextKitStack {
 	/** Returns bounding rectangle which encloses all the glyphs corresponding to textStorage
 	*/
 	open func boundingRectForCompleteText() -> CGRect {
+        if self.textStorage.length <= 0 { return CGRect.zero }
 		let initialSize = self.textContainer.size
 		self.textContainer.size = CGSize(width: self.textContainer.size.width, height: CGFloat.greatestFiniteMagnitude)
 		let glyphRange = self.layoutManager.glyphRange(for: textContainer)
@@ -104,6 +126,20 @@ open class TextKitStack {
 		self.textContainer.size = initialSize
 		return rect
 	}
+    
+    open func boundingRectForTextDisplayFull() -> CGRect {
+        if self.textStorage.length <= 0 { return CGRect.zero }
+        let initialSize = self.textContainer.size
+        let initialNumberOfLines = self.numberOflines
+        self.numberOflines = 1000000
+        self.textContainer.size = CGSize(width: self.textContainer.size.width, height: CGFloat.greatestFiniteMagnitude)
+        let glyphRange = self.layoutManager.glyphRange(for: textContainer)
+        self.layoutManager.invalidateDisplay(forCharacterRange: NSMakeRange(0, self.textStorage.length - 1))
+        let rect = self.layoutManager.boundingRect(forGlyphRange: glyphRange, in: self.textContainer)
+        self.textContainer.size = initialSize
+        self.numberOflines = initialNumberOfLines
+        return rect
+    }
 	
 	/** Returns bounding rectangle based on containerSize, number of lines and font of text
 	- parameters:
@@ -112,6 +148,7 @@ open class TextKitStack {
 		- font: UIFont
 	*/
 	open func rectFittingTextForContainerSize(_ size: CGSize, numberOfLines: Int, font: UIFont) -> CGRect {
+        if self.textStorage.length <= 0 { return CGRect.zero }
 		let initialSize = self.textContainer.size
 		self.textContainer.size = size
 		self.textContainer.maximumNumberOfLines = numberOfLines
@@ -120,8 +157,6 @@ open class TextKitStack {
 		if numberOfLines > 0 {
 			if numberOfLines < totalLines {
 				textBounds.size.height -= CGFloat(totalLines - numberOfLines) * font.lineHeight
-			} else if numberOfLines > totalLines {
-				textBounds.size.height += CGFloat(numberOfLines - totalLines) * font.lineHeight
 			}
 		}
 		textBounds.size.width = ceil(textBounds.size.width)
@@ -134,7 +169,7 @@ open class TextKitStack {
 	- parameters:
 		- attributedTruncationToken: NSAttributedString
 	*/
-	open func rangeForTokenInsertion(_ attributedTruncationToken: NSAttributedString) -> NSRange {
+    open func rangeForTokenInsertion(_ attributedTruncationToken: NSAttributedString, font: UIFont, inRect: CGRect? = nil) -> NSRange {
 		guard self.textStorage.length > 0 else {
 			return NSMakeRange(NSNotFound, 0)
 		}
@@ -148,16 +183,26 @@ open class TextKitStack {
 			self.layoutManager.lineFragmentRect(forGlyphAt: glyphIndex, effectiveRange: &lineRange)
 			rangeOfText = lineRange
 		}
-		let completeRect = boundingRectForCompleteText()
+        let fittingRect = rectFittingTextForContainerSize(CGSize(width: self.textContainer.size.width, height: CGFloat.greatestFiniteMagnitude), numberOfLines: self.numberOflines, font: font)
+        let fullRect = boundingRectForTextDisplayFull()
+		let calculateRect = inRect ?? fittingRect
+        if (fullRect.size.width - calculateRect.size.width) <= 8 &&
+            (fullRect.size.height - calculateRect.size.height) <= 8 {
+            return NSMakeRange(NSNotFound, 0)
+        }
+        
+        var indexTokenLocation = NSNotFound
 		let sizeOfToken = attributedTruncationToken.sizeOfText()
 		var rectOfToken = CGRect.zero
 		rectOfToken.size = sizeOfToken
-		rectOfToken.origin.x = completeRect.maxX - sizeOfToken.width
-		rectOfToken.origin.y = completeRect.maxY - sizeOfToken.height
-		let index = characterIndexAtLocation(rectOfToken.origin)
+        rectOfToken.origin.y = calculateRect.maxY - sizeOfToken.height
+        rectOfToken.origin.x = calculateRect.maxX - sizeOfToken.width
+        indexTokenLocation = self.lastCharacterIndexInLineAtLocation(rectOfToken.origin)
+        
+        if (indexTokenLocation + 1) >= self.textStorage.length { return NSMakeRange(NSNotFound, indexTokenLocation) }
 		if rangeOfText.location != NSNotFound {
-			rangeOfText.length += (rangeOfText.location - index)
-			rangeOfText.location = index
+			rangeOfText.length += (rangeOfText.location - indexTokenLocation)
+			rangeOfText.location = indexTokenLocation
 		}
 		return rangeOfText;
 	}
@@ -249,6 +294,6 @@ open class TextKitStack {
 		var convertedLocation = location
 		convertedLocation.x -= self.currentTextOffset.x
 		convertedLocation.y -= self.currentTextOffset.y
-		return self.layoutManager.glyphIndex(for: location, in: self.textContainer, fractionOfDistanceThroughGlyph: nil)
+		return self.layoutManager.glyphIndex(for: location, in: self.textContainer)
 	}
 }
